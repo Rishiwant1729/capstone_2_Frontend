@@ -6,7 +6,9 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SummaryView from "./pages/SummaryView";
 import Upload from "./pages/Upload";
-import ProtectedRoute from "./utils/protectedRoute";
+import ProtectedRoute from "./utils/protectedRoute.jsx";
+
+
 
 const App = () => (
   <Routes>
