@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signup } from "../services/api";
 import "./Signup.css";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -23,20 +22,10 @@ const Signup = () => {
     setStatus({ type: "loading", message: "Creating your account..." });
 
     try {
-      const response = await fetch(`${API_URL}auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Unable to sign up");
-      }
-
+      const result = await signup(formData);
       localStorage.setItem("token", result.token);
       setStatus({ type: "success", message: "Account created! Redirecting..." });
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/dashboard"), 1500);
     } catch (error) {
       setStatus({ type: "error", message: error.message });
     }
@@ -46,7 +35,6 @@ const Signup = () => {
     <div className="auth-page">
       <h1 className="auth-heading">CritiCore</h1>
       <div className="auth-card">
-
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Name
