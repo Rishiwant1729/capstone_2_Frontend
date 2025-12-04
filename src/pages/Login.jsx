@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../services/api";
 import "./Login.css";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
-
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [status, setStatus] = useState({ type: "idle", message: "" });
 
@@ -18,19 +18,10 @@ const Login = () => {
     setStatus({ type: "loading", message: "Signing you in..." });
 
     try {
-      const response = await fetch(`${API_URL}auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Unable to sign in");
-      }
-
+      const result = await login(formData);
       localStorage.setItem("token", result.token);
       setStatus({ type: "success", message: "Welcome back!" });
+      setTimeout(() => navigate("/dashboard"), 500);
     } catch (error) {
       setStatus({ type: "error", message: error.message });
     }
@@ -40,7 +31,6 @@ const Login = () => {
     <div className="auth-page">
       <h1 className="auth-heading">CritiCore</h1>
       <div className="auth-card">
-
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Email
