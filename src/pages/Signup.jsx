@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import "./Signup.css";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,29 +23,31 @@ const Signup = () => {
     setStatus({ type: "loading", message: "Creating your account..." });
 
     try {
-      await signup(formData);
-      setStatus({
-        type: "success",
-        message: "Account created! Redirecting...",
+      const response = await fetch(`${API_URL}auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      navigate("/dashboard", { replace: true });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to sign up");
+      }
+
+      localStorage.setItem("token", result.token);
+      setStatus({ type: "success", message: "Account created! Redirecting..." });
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
-      setStatus({
-        type: "error",
-        message: error.response?.data?.error || error.message,
-      });
+      setStatus({ type: "error", message: error.message });
     }
   };
 
   return (
-    <section className="page">
-      <div className="form-card">
-        <h1>Create your CritiCore account</h1>
-        <p className="card__muted">
-          Upload books, store insights, and collaborate with your team.
-        </p>
+    <div className="auth-page">
+      <h1 className="auth-heading">CritiCore</h1>
+      <div className="auth-card">
 
-        <form className="form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Name
             <input
@@ -52,7 +55,7 @@ const Signup = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Jane Critique"
+              placeholder="Jane Page"
             />
           </label>
 
@@ -64,6 +67,7 @@ const Signup = () => {
               value={formData.email}
               onChange={handleChange}
               required
+              placeholder="you@example.com"
             />
           </label>
 
@@ -75,24 +79,26 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              minLength={6}
+              placeholder="At least 8 characters"
             />
           </label>
 
           <button type="submit" disabled={status.type === "loading"}>
-            {status.type === "loading" ? "Creating account..." : "Sign up"}
+            {status.type === "loading" ? "Signing you up..." : "Sign up"}
           </button>
         </form>
 
         {status.message && (
-          <p className={`status status--${status.type}`}>{status.message}</p>
+          <p className={`status-message ${status.type}`}>
+            {status.message}
+          </p>
         )}
 
-        <p className="card__muted">
+        <p className="auth-switch">
           Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
-    </section>
+    </div>
   );
 };
 

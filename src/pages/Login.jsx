@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import { Link } from "react-router-dom";
+import "./Login.css";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [status, setStatus] = useState({ type: "idle", message: "" });
 
@@ -19,35 +18,39 @@ const Login = () => {
     setStatus({ type: "loading", message: "Signing you in..." });
 
     try {
-      await login(formData);
-      setStatus({ type: "success", message: "Welcome back!" });
-      const redirectTo = location.state?.from?.pathname ?? "/dashboard";
-      navigate(redirectTo, { replace: true });
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message: error.response?.data?.error || error.message,
+      const response = await fetch(`${API_URL}auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to sign in");
+      }
+
+      localStorage.setItem("token", result.token);
+      setStatus({ type: "success", message: "Welcome back!" });
+    } catch (error) {
+      setStatus({ type: "error", message: error.message });
     }
   };
 
   return (
-    <section className="page">
-      <div className="form-card">
-        <h1>Sign in to CritiCore</h1>
-        <p className="card__muted">
-          Access your library and keep summaries in sync across devices.
-        </p>
+    <div className="auth-page">
+      <h1 className="auth-heading">CritiCore</h1>
+      <div className="auth-card">
 
-        <form className="form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            Email address
+            Email
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
+              placeholder="you@example.com"
             />
           </label>
 
@@ -59,7 +62,7 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              minLength={6}
+              placeholder="••••••••"
             />
           </label>
 
@@ -69,14 +72,16 @@ const Login = () => {
         </form>
 
         {status.message && (
-          <p className={`status status--${status.type}`}>{status.message}</p>
+          <p className={`status-message ${status.type}`}>
+            {status.message}
+          </p>
         )}
 
-        <p className="card__muted">
-          New to CritiCore? <Link to="/signup">Create an account</Link>
+        <p className="auth-switch">
+          New to the community? <Link to="/signup">Create an account</Link>
         </p>
       </div>
-    </section>
+    </div>
   );
 };
 
