@@ -85,3 +85,81 @@ export const deleteBook = async (bookId) => {
   }
   return true;
 };
+
+// Summary APIs
+export const updateSummary = async (bookId, content, highlights) => {
+  const response = await fetch(`${API_URL}api/books/${bookId}/summary`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ content, highlights }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to update summary");
+  return data;
+};
+
+export const deleteSummary = async (bookId) => {
+  const response = await fetch(`${API_URL}api/books/${bookId}/summary`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || "Failed to delete summary");
+  }
+  return true;
+};
+
+export const regenerateSummary = async (bookId) => {
+  const response = await fetch(`${API_URL}api/books/${bookId}/summary/regenerate`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to regenerate summary");
+  return data;
+};
+
+// Note APIs
+export const addNote = async (summaryId, content) => {
+  const response = await fetch(`${API_URL}api/summaries/${summaryId}/notes`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ content }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to add note");
+  return data;
+};
+
+export const getNotes = async (summaryId) => {
+  const response = await fetch(`${API_URL}api/summaries/${summaryId}/notes`, {
+    headers: getAuthHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to fetch notes");
+  return data;
+};
+
+export const updateNote = async (noteId, content) => {
+  const response = await fetch(`${API_URL}api/notes/${noteId}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ content }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Failed to update note");
+  return data;
+};
+
+export const deleteNote = async (noteId) => {
+  const response = await fetch(`${API_URL}api/notes/${noteId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || "Failed to delete note");
+  }
+  return true;
+};
